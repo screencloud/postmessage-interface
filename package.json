@@ -1,0 +1,22 @@
+{
+  "name": "postmessage-interface",
+  "version": "1.0.0",
+  "description": "expose api and call methods using postMessage",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "build-examples": "browserify index.js > ./examples/dist/bundle.js",
+    "examples": "python -m SimpleHTTPServer 1234 ./examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/screencloud/postmessage-interface.git"
+  },
+  "author": "luke@screen.cloud",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "jest": "^20.0.4"
+  }
+}

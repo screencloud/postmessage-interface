@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>index</title>
+    <script src="../dist/bundle.js"></script>
+    <script>
+    var PostMessageInterface = window.PostMessageInterface
+    var pmi = new PostMessageInterface({
+      api: {
+        add: function(a,b){
+          console.log('add called', a, b)
+          return a+b
+        },
+        emit: function(name, data){
+          if(name === 'hello' && data==='world'){
+            document.body.style.backgroundColor = 'yellow'
+          }
+        }
+      },
+      guard: function(e){
+        console.log(e, e.source.location.href, e.source.location.href.indexOf("#3") === -1)
+        return e.source.location.href.indexOf("#3") === -1
+      }
+    })
+    </script>
+  </head>
+  <body>
+    <h1>index</h1>
+    <p>first two frames should be green, last should be red, background should be yellow</p>
+    <iframe id="frame1" src="./inner.html?#1"></iframe>
+    <iframe id="frame2" src="./inner.html?#2"></iframe>
+    <iframe id="frame3" src="./inner.html?#3"></iframe>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>inner</title>
+    <script src="../dist/bundle.js"></script>
+    <script>
+    var PostMessageInterface = window.PostMessageInterface
+    var pmi = new PostMessageInterface({
+      connectTimeout: 1000
+    })
+    pmi.connect(window.top).then(function(api){
+      api.call('add', [1,2]).then(function(result){
+        console.log('got result', result)
+        if(result === 3){
+          document.body.style.backgroundColor = 'green'
+        }
+      })
+      api.fire('hello', 'world')
+    }).catch((err)=>{
+      document.body.style.backgroundColor = 'red'
+    })
+    </script>
+  </head>
+  <body>
+    <h1>inner</h1>
+  </body>
+</html>
