@@ -178,6 +178,9 @@ Interface.prototype._handleResult = function (result) {
 
 Interface.prototype._handleCall = function (call, e) {
   try {
+    if (!this.api || this.api[call.method] === undefined) {
+      throw new Error('missing api method: ' + call.method)
+    }
     var result = this.api[call.method].apply(this.api, call.args)
     // check if its a promise or just a value
     if (result !== undefined && result.then) {

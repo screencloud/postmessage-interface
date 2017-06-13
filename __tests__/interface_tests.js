@@ -41,7 +41,7 @@ const testAPI = {
 }
 
 function mockWindowInterface (input, output) {
-  var interfaces = {}
+  const interfaces = {}
   interfaces.output = {
     postMessage: (data, origin) => {
       output.receive({
@@ -65,12 +65,12 @@ function mockWindowInterface (input, output) {
 
 describe('postmessage interface', function () {
   it('should not require any options', function () {
-    var op = new Interface()
+    const op = new Interface()
     expect(op.id).not.toBe(undefined)
   })
   it('should be able to expose and call methods', function () {
-    var a = new Interface({id: 'A', api: testAPI})
-    var b = new Interface({id: 'B', timeout: 500})
+    const a = new Interface({id: 'A', api: testAPI})
+    const b = new Interface({id: 'B', timeout: 500})
     return b.connect(mockWindowInterface(b, a)).then((api) => {
       return Promise.resolve().then(() => {
         return api.call('add', [10, 5]).then((result) => {
@@ -100,8 +100,8 @@ describe('postmessage interface', function () {
     })
   })
   it('should be able to send and receive events', function () {
-    var a = new Interface({id: 'A', api: testAPI, guard: () => true })
-    var b = new Interface({timeout: 500})
+    const a = new Interface({id: 'A', api: testAPI, guard: () => true })
+    const b = new Interface({timeout: 500})
     return b.connect(mockWindowInterface(b, a)).then((api) => {
       return Promise.resolve().then(() => {
         api.fire('foo', 'bar')
@@ -112,7 +112,7 @@ describe('postmessage interface', function () {
     })
   })
   it('should timeout if not connected', function () {
-    var a = new Interface({id: 'A', connectTimeout: 100})
+    const a = new Interface({id: 'A', connectTimeout: 100})
     return a.connect(mockWindowInterface(a, {
       receive: () => {}
     })).catch((err) => {
@@ -120,17 +120,17 @@ describe('postmessage interface', function () {
     })
   })
   it('should be possible to add an input guard', function () {
-    var state = {}
-    var a = new Interface({
+    const state = {}
+    const a = new Interface({
       id: 'A',
       connectTimeout: 100,
       api: {echo: (v) => v},
       // only allow from b
       guard: (e) => e.source === state.bInterface
     })
-    var b = new Interface({id: 'B', api: {
+    const b = new Interface({id: 'B', api: {
     }, timeout: 500, connectTimeout: 100})
-    var c = new Interface({id: 'C', api: {
+    const c = new Interface({id: 'C', api: {
     }, timeout: 500, connectTimeout: 100})
     state.bInterface = mockWindowInterface(b, a)
     return b.connect(state.bInterface).then((api) => {

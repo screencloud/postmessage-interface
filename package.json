@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
+    "test-report": "open ./coverage/lcov-report/index.html",
     "build-examples": "browserify index.js > ./examples/dist/bundle.js",
     "examples": "python -m SimpleHTTPServer 1234 ./examples"
   },
