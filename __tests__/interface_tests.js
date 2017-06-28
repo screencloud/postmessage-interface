@@ -1,4 +1,8 @@
-const Interface = require('../libs/interface.js')
+const PMI = require('../libs/interface.js')
+const ExposedInterface = PMI.ExposedInterface
+const RemoteInterface = PMI.RemoteInterface
+const EventEmitter = require('events').EventEmitter
+const util = require('util')
 
 const delayedResolve = (delay, value) => {
   return new Promise((resolve, reject) => {
@@ -44,7 +48,8 @@ function mockWindowInterface (input, output) {
   const interfaces = {}
   interfaces.output = {
     postMessage: (data, origin) => {
-      output.receive({
+      console.log('input.postMessage', data, origin)
+      output._receive({
         data: data,
         origin: origin,
         source: interfaces.input
@@ -53,7 +58,8 @@ function mockWindowInterface (input, output) {
   }
   interfaces.input = {
     postMessage: (data, origin) => {
-      input.receive({
+      console.log('output.postMessage', data, origin)
+      input._receive({
         data: data,
         origin: origin,
         source: interfaces.output
@@ -65,13 +71,14 @@ function mockWindowInterface (input, output) {
 
 describe('postmessage interface', function () {
   it('should not require any options', function () {
-    const op = new Interface()
+    const op = new RemoteInterface()
     expect(op.id).not.toBe(undefined)
   })
   it('should be able to expose and call methods', function () {
-    const a = new Interface({id: 'A', api: testAPI})
-    const b = new Interface({id: 'B', timeout: 500})
-    return b.connect(mockWindowInterface(b, a)).then((api) => {
+    const exposed = new ExposedInterface(testAPI, {id: 'Exposed'})
+    const remote = new RemoteInterface({id: 'Remote', timeout: 500})
+    const mockWindow = new mockWindowInterface(remote, exposed)
+    return remote.connect(mockWindow).then((api) => {
       return Promise.resolve().then(() => {
         return api.call('add', [10, 5]).then((result) => {
           expect(result).toBe(15)
@@ -100,43 +107,76 @@ describe('postmessage interface', function () {
     })
   })
   it('should be able to send and receive events', function () {
-    const a = new Interface({id: 'A', api: testAPI, guard: () => true })
-    const b = new Interface({timeout: 500})
-    return b.connect(mockWindowInterface(b, a)).then((api) => {
+    const exposed = new ExposedInterface(testAPI, {id: 'Exposed', guard: () => true })
+    const remote = new RemoteInterface({timeout: 500})
+    const mockWindow = mockWindowInterface(remote, exposed)
+    return remote.connect(mockWindow).then((api) => {
       return Promise.resolve().then(() => {
         api.fire('foo', 'bar')
         delayedResolve(10)
       }).then(() => {
-        expect(a.api.events.length).toBe(1)
+        expect(exposed._handler.events.length).toBe(1)
       })
     })
   })
   it('should timeout if not connected', function () {
-    const a = new Interface({id: 'A', connectTimeout: 100})
-    return a.connect(mockWindowInterface(a, {
-      receive: () => {}
-    })).catch((err) => {
+    const remote = new RemoteInterface({id: 'Remote', connectTimeout: 100})
+    const mockWindow = mockWindowInterface(remote, {_receive: () => {}})
+    return remote.connect(mockWindow).catch((err) => {
       expect(err.toString().indexOf('connect timeout') !== -1).toBe(true)
     })
   })
   it('should be possible to add an input guard', function () {
     const state = {}
-    const a = new Interface({
-      id: 'A',
-      connectTimeout: 100,
-      api: {echo: (v) => v},
-      // only allow from b
-      guard: (e) => e.source === state.bInterface
-    })
-    const b = new Interface({id: 'B', api: {
-    }, timeout: 500, connectTimeout: 100})
-    const c = new Interface({id: 'C', api: {
-    }, timeout: 500, connectTimeout: 100})
-    state.bInterface = mockWindowInterface(b, a)
-    return b.connect(state.bInterface).then((api) => {
-      return c.connect(mockWindowInterface(c, a))
+    const exposed = new ExposedInterface(
+      {echo: (v) => v},
+      {
+        id: 'Exposed',
+        connectTimeout: 100,
+      // only allow from 1
+        guard: (e) => e.source === state.mockWindow1
+      })
+    const remote1 = new RemoteInterface({id: 'Remote1', timeout: 500, connectTimeout: 100})
+    const remote2 = new RemoteInterface({id: 'Remote2', timeout: 500, connectTimeout: 100})
+    const mockWindow1 = mockWindowInterface(remote1, exposed)
+    state.mockWindow1 = mockWindow1
+    const mockWindow2 = mockWindowInterface(remote2, exposed)
+    return remote1.connect(mockWindow1).then((api) => {
+      return remote2.connect(mockWindow2)
     }).catch((err) => {
       expect(err.toString().indexOf('connect timeout') !== -1).toBe(true)
+    })
+  })
+
+  it('should be possible to add an input guard', function () {
+    const state = {}
+
+    const EventEmitterHandler = function () {
+
+    }
+
+    util.inherits(EventEmitterHandler, EventEmitter)
+
+    EventEmitterHandler.prototype.echo = (v) => v
+    const eventEmitterHandler = new EventEmitterHandler()
+
+    const exposed = new ExposedInterface(
+      eventEmitterHandler,
+      {
+        id: 'eventEmitterHandler',
+        connectTimeout: 100
+      })
+    const remote = new RemoteInterface({id: 'Remote1', timeout: 500, connectTimeout: 100})
+    const mockWindow = mockWindowInterface(remote, exposed)
+    return remote.connect(mockWindow).then((api) => {
+      return new Promise((resolve, reject) => {
+        api.on('foo', (data) => {
+          console.log(data)
+          expect(data).toBe('bar')
+          resolve()
+        })
+        eventEmitterHandler.emit('foo', 'bar')
+      })
     })
   })
 })
