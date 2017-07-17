@@ -1,6 +1,6 @@
 {
   "name": "postmessage-interface",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "expose api and call methods using postMessage",
   "main": "index.js",
   "scripts": {
