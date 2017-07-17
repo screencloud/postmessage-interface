@@ -33,8 +33,10 @@ ExposedInterface.prototype._receive = function (e) {
       return
     }
   }
-  var message = this._codec.decode(e.data)
-  if (message.ping) {
+  var message = e.data.indexOf('{') === 0 && this._codec.decode(e.data)
+  if (!message) {
+    return
+  } else if (message.ping) {
     this._handlePing(message.ping, e)
   } else if (message.call) {
     this._handleCall(message.call, e)
