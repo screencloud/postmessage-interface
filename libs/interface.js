@@ -1,7 +1,7 @@
 
 const EventEmitter = require('events').EventEmitter
 
-const now = () => (new Date()).getTime()
+const now = function () { return (new Date()).getTime() }
 
 const DEFAULT_CODEC = {
   encode: JSON.stringify,
@@ -60,6 +60,7 @@ ExposedInterface.prototype._handlePing = function (ping, e) {
 }
 
 ExposedInterface.prototype._handleCall = function (call, e) {
+  var self = this
   try {
     if (!this._handler || this._handler[call.method] === undefined) {
       throw new Error('missing api method: ' + call.method)
@@ -67,16 +68,16 @@ ExposedInterface.prototype._handleCall = function (call, e) {
     var result = this._handler[call.method].apply(this._handler, call.args)
     // check if its a promise or just a value
     if (result !== undefined && result.then) {
-      result.then((value) => {
-        this._reply({
+      result.then(function (value) {
+        self._reply({
           result: {
             id: call.id,
             value: value
           }
         }, e)
-      }).catch((err) => {
+      }).catch(function (err) {
         console.log('call resulted in error', err)
-        this._reply({
+        self._reply({
           result: {
             id: call.id,
             error: err.toString()
@@ -85,7 +86,7 @@ ExposedInterface.prototype._handleCall = function (call, e) {
       })
     } else {
       // result isnt a promise
-      this._reply({
+      self._reply({
         result: {
           id: call.id,
           value: result
@@ -94,7 +95,7 @@ ExposedInterface.prototype._handleCall = function (call, e) {
     }
   } catch (err) {
     console.log('call resulted in error', err)
-    this._reply({
+    self._reply({
       result: {
         id: call.id,
         error: err.toString()
@@ -179,26 +180,29 @@ RemoteInterface.prototype.connect = function (output) {
   this._receiveHandler = this._receive.bind(this)
   this._window.addEventListener('message', this._receiveHandler)
   // REVIEW: extra code for multiple pending connections is no longer needed
-  return new Promise((resolve, reject) => {
-    var connId = this.id + '_conn_' + now()
+  var self = this
+  return new Promise(function (resolve, reject) {
+    var connId = self.id + '_conn_' + now()
     var pendingConnection = {}
-    this._pendingConnections[connId] = pendingConnection
-    var cleanup = () => {
+    self._pendingConnections[connId] = pendingConnection
+    var cleanup = function () {
       clearInterval(pendingConnection.pingIntervalRef)
       clearTimeout(pendingConnection.timeoutRef)
-      delete this._pendingConnections[connId]
+      delete self._pendingConnections[connId]
     }
-    pendingConnection.timeoutRef = setTimeout(() => {
-      this.dispose()
+    pendingConnection.timeoutRef = setTimeout(function () {
+      self.dispose()
       cleanup()
       reject(new Error('connect timeout'))
-    }, this._connectTimeout)
-    pendingConnection.connected = () => {
+    }, self._connectTimeout)
+    pendingConnection.connected = function () {
       cleanup()
-      resolve(this)
+      resolve(self)
     }
-    pendingConnection.pingIntervalRef = setInterval(() => this._ping(connId), this._pingInterval)
-    this._ping(connId)
+    pendingConnection.pingIntervalRef = setInterval(function () {
+      return self._ping(connId)
+    }, self._pingInterval)
+    self._ping(connId)
   })
 }
 
@@ -207,20 +211,21 @@ RemoteInterface.prototype.call = function (method, args, timeout) {
   var id = this._calls++
   timeout = timeout || this._timeout
   // console.log('got timeout', timeout)
-  return new Promise((resolve, reject) => {
-    this._pendingCalls[id] = {
+  var self = this
+  return new Promise(function (resolve, reject) {
+    self._pendingCalls[id] = {
       resolve: resolve,
       reject: reject,
       ts: now(),
       timeout: timeout,
-      timeoutRef: setTimeout(() => {
+      timeoutRef: setTimeout(function () {
         // console.log('timeout!', id)
         var err = new Error('call timeout: ' + method)
         err.info = {id: id}
-        this._reject(id, err)
+        self._reject(id, err)
       }, timeout)
     }
-    this._send({
+    self._send({
       call: {
         id: id,
         method: method,
