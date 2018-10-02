@@ -35,6 +35,8 @@ node_modules
 cache
 tmp
 
+examples/dist/bundle.js
+
 *.lock
 
 .idea
