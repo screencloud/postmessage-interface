@@ -33,7 +33,9 @@ build/Release
 node_modules
 
 cache
-dist
 tmp
+dist
 
 *.lock
+
+.idea

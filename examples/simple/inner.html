@@ -6,7 +6,7 @@
     <script src="../dist/bundle.js"></script>
     <script>
     var PostMessageInterface = window.PostMessageInterface
-    var pmi = new PostMessageInterface({
+    var pmi = new PostMessageInterface.RemoteInterface({
       connectTimeout: 1000
     })
     pmi.connect(window.parent).then(function(api){
