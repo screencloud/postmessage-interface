@@ -2,7 +2,7 @@
   "name": "@screencloud/postmessage-interface",
   "version": "1.0.2",
   "description": "expose api and call methods using postMessage",
-  "main": "dist/bundle.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
     "test-report": "open ./coverage/lcov-report/index.html",
@@ -22,7 +22,7 @@
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "browserify": "^14.4.0",
+    "browserify": "^13.0.0",
     "jest": "^20.0.4",
     "rimraf": "^2.6.2"
   }
