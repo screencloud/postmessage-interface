@@ -16,7 +16,7 @@
     "url": "https://github.com/screencloud/postmessage-interface.git"
   },
   "files": [
-    "/.lib",
+    "libs",
     "index.js"
   ],
   "author": "luke@screen.cloud",
