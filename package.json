@@ -8,7 +8,8 @@
     "prebuild": "rimraf dist && mkdir dist",
     "build": "browserify index.js -o ./dist/bundle.js",
     "build-examples": "rm -rdf ./examples/dist && mkdir ./examples/dist && browserify index.js > ./examples/dist/bundle.js",
-    "examples": "python -m SimpleHTTPServer 1234 ./examples"
+    "examples": "python -m SimpleHTTPServer 1234 ./examples",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
