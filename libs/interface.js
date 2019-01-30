@@ -277,7 +277,13 @@ RemoteInterface.prototype._receive = function (e) {
       return
     }
   }
-  var message = this._codec.decode(e.data)
+  try {
+      var message = this._codec.decode(e.data)
+  } catch (err) {
+    console.log('Warning: could not decode a message', err.message, 'Data:', e.data)
+    return
+  }
+
   if (message.pong) {
     this._handlePong(message.pong)
   } else if (message.result) {
