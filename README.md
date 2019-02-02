@@ -1,6 +1,5 @@
 # PostMessage API
 
-
 Expose and consume interfaces via postMessage
 
 npm install screencloud/postmessage-interface
