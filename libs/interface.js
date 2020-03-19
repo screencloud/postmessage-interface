@@ -33,7 +33,14 @@ ExposedInterface.prototype._receive = function (e) {
       return
     }
   }
-  var message = e.data.indexOf('{') === 0 && this._codec.decode(e.data)
+
+  var message = (
+    e.data
+    && typeof e.data.indexOf === 'function'
+    && e.data.indexOf('{') === 0
+    && this._codec.decode(e.data)
+  )
+
   if (!message) {
     return
   } else if (message.ping) {
