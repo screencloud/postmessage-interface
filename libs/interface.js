@@ -35,12 +35,7 @@ ExposedInterface.prototype._receive = function (e) {
   }
 
   try {
-    var message = (
-      e.data
-      && typeof e.data.indexOf === 'function'
-      && e.data.indexOf('{') === 0
-      && this._codec.decode(e.data)
-    )
+    var message = this._codec.decode(e.data)
   } catch(err) {
     console.log('Warning: could not decode a message', err.message, 'Data:', e.data)
     return
